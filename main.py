@@ -64,14 +64,14 @@ cutoffs = loadCsv(csv_file_path)
 
 # Main logic to fetch data and send emails
 def main():
+    db = connect_to_mysql()
+    
     while True:
-        # running the googleforms.py in a main.py script independently 
         file_path = r'C:\Users\Admin\Downloads\Python-College-Predictor-main\Python-College-Predictor-main\Google_Forms_logic\googleforms.py'
         subprocess.run(['python', file_path])
 
-        last_processed_id = get_last_processed_id()
-        fields_to_fetch = ['_id', 'Name', 'Gmail', 'Score', 'Category', 'Preferred Courses']
-        fetched_data = fetch_specific_fields(db, collection_name, fields_to_fetch, last_processed_id)
+        last_processed_id = get_last_processed_id(db)
+        fetched_data = fetch_specific_fields(db, last_processed_id)
 
         for student in fetched_data:
             eligible_colleges = predict_colleges(cutoffs, student)
@@ -86,14 +86,12 @@ def main():
             
             print(f"Sending email to {student['Gmail']}:\n{body}\n")
 
-            # Attempt to send email
             if send_email(student['Gmail'], "College Predictor Results", body):
-                update_last_processed_id(str(student['_id']))  # Update the last processed ObjectId
+                update_last_processed_id(db, student['id'])  # Update the last processed ID
             else:
                 print(f"Failed to send email to {student['Gmail']}.")
 
-
-        time.sleep(30) 
+        time.sleep(30)
 
 if __name__ == "__main__":
     main()

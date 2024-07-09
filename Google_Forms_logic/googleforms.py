@@ -1,7 +1,14 @@
 import gspread
 from oauth2client.service_account import ServiceAccountCredentials
 from pymongo import MongoClient
+import sys
+import os
 
+
+# Add the MongoDb folder to the system path
+sys.path.append(os.path.join(os.path.dirname(__file__), '../MongoDb'))
+
+from fetching import connect_to_mysql
 
 # Define Google Sheets and MongoDB connection settings
 scope = ['https://www.googleapis.com/auth/spreadsheets.readonly']
@@ -47,13 +54,38 @@ print("All records (Timestamp, Name, Gmail, Score, Category, Preferred Courses):
 for record in data:
     print(f"Timestamp: {record['Timestamp']}, Name: {record['Name']}, Gmail: {record['Gmail']}, Score: {record['Score']}, Category: {record['Category']}, Preferred Courses: {record['Preferred Courses']}")
 
+# Function to establish MySQL connection
+db = connect_to_mysql()
+
+# Function to insert data into MySQL
+def insert_data_to_mysql(db, data):
+    cursor = db.cursor()
+    for record in data:
+        timestamp = record['Timestamp']
+        name = record['Name']
+        gmail = record['Gmail']
+        score = record['Score']
+        category = record['Category']
+        preferred_courses = record['Preferred Courses']
+        query = "INSERT INTO scores (timestamp, name, gmail, score, category, preferred_courses) VALUES (%s, %s, %s, %s, %s, %s)"
+        values = (timestamp, name, gmail, score, category, preferred_courses)
+        cursor.execute(query, values)
+    db.commit()
+    cursor.close()
+
+# Insert the data into MySQL
+insert_data_to_mysql(db, data)
+print("Data inserted into MySQL successfully.")
+
+'''
 # Function to establish MongoDB connection
-def connect_to_mongodb(host='mongodb+srv://vedapatki1:SEHU19yYtvbqQJ8N@cluster0.aapvwca.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0', port=27017, db_name='mydatabase'):
+def connect_to_mysql(host='mongodb+srv://vedapatki1:SEHU19yYtvbqQJ8N@cluster0.aapvwca.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0', port=27017, db_name='mydatabase'):
     client = MongoClient(host, port)
     db = client[db_name]
     return db
+
 # MongoDB connection settings
-db = connect_to_mongodb()
+db = connect_to_mysql()
 collection_name = 'scores'  # Replace 'students' with your collection name
 collection = db[collection_name]
 
@@ -77,5 +109,5 @@ if new_data_to_insert:
     print(f"Inserted {len(result.inserted_ids)} new documents into MongoDB.")
 else:
     print("No new data to insert into MongoDB.")
-
+'''
 
