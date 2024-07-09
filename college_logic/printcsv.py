@@ -25,4 +25,4 @@ def loadCsv(csv_file_path):
 
 
 
-loadCsv(r"C:\Users\Admin\Downloads\Python-College-Predictor-main\Python-College-Predictor-main\college_logic\Colleges.csv")
+loadCsv(r"/home/veda1/Python-College-Predictor-main/college_logic/Colleges.csv")
